@@ -6,7 +6,7 @@ import { ValidSistems } from "../enums/valid-sistems.enum";
 import { SystemInterface } from "../interfaces/system.interface";
 
 export default class WebSocketServer {
-  private server!: Server;
+  private server!: Server | undefined;
   private onlineSystems: { [system: string]: SystemInterface } = {};
 
   listen(port: number) {
@@ -15,9 +15,22 @@ export default class WebSocketServer {
     });
 
     this.server.on("connection", this.onConnection.bind(this));
-    this.server.on("close", this.onClose.bind(this));
 
     console.log(`Server listening on ${port}`);
+  }
+
+  kill() {
+    if (!this.server) return;
+
+    this.server.close();
+
+    Object.keys(this.onlineSystems).forEach((key) => {
+      this.onlineSystems[key].disconnectAll();
+    });
+
+    this.onlineSystems = {};
+
+    delete this.server;
   }
 
   private onConnection(socket: WebSocket, request: any) {
@@ -45,11 +58,5 @@ export default class WebSocketServer {
     }
 
     subscriber.add(socket, request);
-  }
-
-  private onClose() {
-    Object.keys(this.onlineSystems).forEach((key) => {
-      this.onlineSystems[key].disconnectAll();
-    });
   }
 }
