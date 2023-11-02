@@ -1,62 +1,62 @@
-import URLParse from "url-parse";
-import { Server, WebSocket } from "ws";
-import { isSistemValid } from "../validations/is-sistem-valid";
-import { SubscriberFactory } from "../factory/subscriber-factory";
-import { ValidSistems } from "../enums/valid-sistems.enum";
+import { Server, Socket } from "socket.io";
+import { ValidSystems } from "../enums/valid-systems.enum";
+import { isSystemValid } from "../validations/is-system-valid";
+import { SystemConnectionFactory } from "../factory/system-connection.factory";
 import { SystemInterface } from "../interfaces/system.interface";
 
 export default class WebSocketServer {
-  private server!: Server | undefined;
-  private onlineSystems: { [system: string]: SystemInterface } = {};
+  private server!: Server;
+  private rooms: Record<ValidSystems, Array<SystemInterface>> = {
+    chat: [],
+  };
 
   listen(port: number) {
-    this.server = new Server({
-      port,
+    this.server = new Server(port, {
+      cors: {
+        origin: true,
+      },
     });
 
-    this.server.on("connection", this.onConnection.bind(this));
-
-    console.log(`Server listening on ${port}`);
-  }
-
-  kill() {
-    if (!this.server) return;
-
-    this.server.close();
-
-    Object.keys(this.onlineSystems).forEach((key) => {
-      this.onlineSystems[key].disconnectAll();
+    this.server.on("connection", (socket: Socket) => {
+      socket.on("select_system", (data: { system: string }) => {
+        this.handleSocketSystemSelection(socket, data.system);
+      });
     });
 
-    this.onlineSystems = {};
-
-    delete this.server;
+    this.server.on("send_message", (message) => {
+      console.log(message);
+    });
   }
 
-  private onConnection(socket: WebSocket, request: any) {
-    const urlParse = new URLParse(request.url, true);
-    const query = urlParse.query;
-
-    if (!query.system) {
-      socket.close(1015, 'Missing "system" identify parameter');
-      return;
+  private handleSocketSystemSelection(socket: Socket, system: string) {
+    if (!system) {
+      return this.handleSocketDisconnect(socket, {
+        code: 1015,
+        message: "System value must be informed",
+      });
     }
 
-    const system = query.system as ValidSistems;
+    const s = system as ValidSystems;
 
-    if (!isSistemValid(system)) {
-      socket.close(1008, "Invalid system informed");
-      return;
+    if (!isSystemValid(s)) {
+      return this.handleSocketDisconnect(socket, {
+        code: 1008,
+        message: "Invalid system informed",
+      });
     }
 
-    let subscriber: SystemInterface;
-    if (!this.onlineSystems[system]) {
-      subscriber = SubscriberFactory.getSubscriber(system);
-      this.onlineSystems[system] = subscriber;
-    } else {
-      subscriber = this.onlineSystems[system];
-    }
+    const systemConnection = SystemConnectionFactory.generateConnection(s);
+    systemConnection.add(socket);
+    systemConnection.joinRoom(system);
 
-    subscriber.add(socket, request);
+    this.rooms.chat.push(systemConnection);
+  }
+
+  private handleSocketDisconnect(
+    socket: Socket,
+    error?: { code: number; message: string }
+  ) {
+    socket.emit("error", error);
+    socket.disconnect(true);
   }
 }
