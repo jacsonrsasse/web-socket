@@ -23,6 +23,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "socket.io": "^4.7.2",
     "url-parse": "^1.5.10",
     "ws": "^8.14.2"
   }

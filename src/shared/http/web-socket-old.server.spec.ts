@@ -1,5 +1,5 @@
 import { CloseEvent, Server, WebSocket } from "ws";
-import WebSocketServer from "./web-socket.server";
+import WebSocketServer from "./web-socket-old.server";
 import { ChatSystem } from "../../modules/chat/chat.system";
 
 describe("Web Socket Server", () => {

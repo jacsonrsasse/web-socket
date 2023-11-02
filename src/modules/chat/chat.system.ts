@@ -1,26 +1,32 @@
-import { WebSocket } from "ws";
 import { SystemInterface } from "../../shared/interfaces/system.interface";
+import { Socket } from "socket.io";
 
 export class ChatSystem implements SystemInterface {
-  private sockets: WebSocket[] = [];
+  private socket!: Socket;
+  private currentRoom = "";
 
-  add(socket: WebSocket, request: any) {
-    this.sockets.push(socket);
+  add(socket: Socket) {
+    this.socket = socket;
 
-    socket.onmessage = (message: any) => {
-      this.sockets.forEach((s) => {
-        s.send(message.data);
-      });
-    };
+    socket.on("send_message", (message: any) => {
+      if (this.currentRoom) {
+        socket.to(this.currentRoom).emit("message", message);
+      }
 
-    socket.onclose = () => {
-      console.log("Fechando uma conexão");
+      socket.emit("message", message);
+    });
 
-      this.sockets = this.sockets.filter((s) => s !== socket);
-    };
+    socket.on("disconnect", () => {
+      console.log(`Closing connection ${this.socket.id}`);
+    });
   }
 
-  disconnectAll() {
-    this.sockets.forEach((s) => s.close());
+  joinRoom(room: string) {
+    if (!this.socket) return;
+
+    this.currentRoom = room;
+    this.socket.join(room);
+
+    this.socket.emit("joined", room);
   }
 }
