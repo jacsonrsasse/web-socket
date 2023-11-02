@@ -5,6 +5,10 @@ export class ChatSystem implements SystemInterface {
   private socket!: Socket;
   private currentRoom = "";
 
+  private getSocketId() {
+    return this.socket.id;
+  }
+
   add(socket: Socket) {
     this.socket = socket;
 
@@ -17,7 +21,7 @@ export class ChatSystem implements SystemInterface {
     });
 
     socket.on("disconnect", () => {
-      console.log(`Closing connection ${this.socket.id}`);
+      console.log(`Closing connection ${this.getSocketId()}`);
     });
   }
 
