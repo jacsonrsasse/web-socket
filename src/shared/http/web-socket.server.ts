@@ -6,9 +6,6 @@ import { SystemInterface } from "../interfaces/system.interface";
 
 export default class WebSocketServer {
   private server!: Server;
-  private rooms: Record<ValidSystems, Array<SystemInterface>> = {
-    chat: [],
-  };
 
   listen(port: number) {
     this.server = new Server(port, {
@@ -21,10 +18,6 @@ export default class WebSocketServer {
       socket.on("select_system", (data: { system: string }) => {
         this.handleSocketSystemSelection(socket, data.system);
       });
-    });
-
-    this.server.on("send_message", (message) => {
-      console.log(message);
     });
   }
 
@@ -47,9 +40,7 @@ export default class WebSocketServer {
 
     const systemConnection = SystemConnectionFactory.generateConnection(s);
     systemConnection.add(socket);
-    systemConnection.joinRoom(system);
-
-    this.rooms.chat.push(systemConnection);
+    systemConnection.joinRoom(s);
   }
 
   private handleSocketDisconnect(
