@@ -41,6 +41,8 @@ export default class WebSocketServer {
     const systemConnection = SystemConnectionFactory.generateConnection(s);
     systemConnection.add(socket);
     systemConnection.joinRoom(s);
+
+    socket.emit("connected", { success: true });
   }
 
   private handleSocketDisconnect(
