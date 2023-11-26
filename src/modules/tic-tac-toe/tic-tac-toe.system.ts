@@ -8,6 +8,8 @@ export default class TicTacToeSystem implements SystemInterface {
   private currentRoom = "";
   private isServerConnection = false;
 
+  handler(socket: Socket) {}
+
   add(socket: Socket) {
     socket.on("define_as_server", () => {
       this.isServerConnection = true;
