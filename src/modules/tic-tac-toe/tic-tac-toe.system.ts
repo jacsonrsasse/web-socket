@@ -1,27 +1,52 @@
-import { Socket } from "socket.io";
-import { DefaultEventsMap } from "socket.io/dist/typed-events";
+import { Namespace, Socket } from "socket.io";
 import { SystemInterface } from "../../shared/interfaces/system.interface";
-import { ValidSystems } from "../../shared/enums/valid-systems.enum";
+import { TicTacToeServerSocketEvents } from "./enums/tic-tac-toe-server-socket-events.enum";
+import { TicTacToeClientSocketEvents } from "./enums/tic-tac-toe-client-socket-events.enum";
+
+const SERVER_ROOM = "server";
+const LOBBY_ROOM = "lobby";
 
 export default class TicTacToeSystem implements SystemInterface {
-  private socket!: Socket;
-  private currentRoom = "";
-  private isServerConnection = false;
+  private serverSocket!: Socket;
+  private rooms: Array<string> = [];
 
-  handler(socket: Socket) {}
+  handler(socket: Socket) {
+    socket.on(TicTacToeServerSocketEvents.DEFINE_AS_SERVER, () => {
+      if (this.serverSocket) {
+        console.log("Ja tem um conectado");
+        // todo: implement change server connection if a new one income
+        return;
+      }
+      socket.leave(LOBBY_ROOM);
 
-  add(socket: Socket) {
-    socket.on("define_as_server", () => {
-      this.isServerConnection = true;
+      socket.removeAllListeners(TicTacToeServerSocketEvents.CREATE_USER_ROOM);
+
+      socket.join(SERVER_ROOM);
+
+      socket.on(
+        TicTacToeServerSocketEvents.DISCONNECT_CLIENT_SOCKET,
+        (event) => {
+          socket.nsp.in(event.body).disconnectSockets();
+          socket.emit(TicTacToeClientSocketEvents.CLIENT_SOCKET_DISCONNECTED);
+        }
+      );
+
+      this.serverSocket = socket;
     });
 
-    this.socket = socket;
-  }
+    socket.join(LOBBY_ROOM);
 
-  joinRoom(room: string) {
-    if (!this.socket || room !== ValidSystems.TicTacToe) return;
+    socket.on(TicTacToeServerSocketEvents.CREATE_USER_ROOM, ({ body }) => {
+      try {
+        socket.join(body);
+        this.rooms.push(body);
+        socket.emit(TicTacToeClientSocketEvents.CONNECTED_IN_ROOM, body);
+      } catch (error) {}
+    });
 
-    this.currentRoom = room;
-    this.socket.join(room);
+    socket.on(TicTacToeServerSocketEvents.RELATE_USER_ID, ({ body }) => {
+      try {
+      } catch (error) {}
+    });
   }
 }

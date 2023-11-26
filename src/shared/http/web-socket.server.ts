@@ -1,8 +1,8 @@
-import { Server, Socket } from "socket.io";
+import { Server } from "socket.io";
 import { ValidSystems } from "../enums/valid-systems.enum";
-import { isSystemValid } from "../validations/is-system-valid";
-import { SystemConnectionFactory } from "../factory/system-connection.factory";
 import { SystemInterface } from "../interfaces/system.interface";
+import { ChatSystem } from "../../modules/chat/chat.system";
+import TicTacToeSystem from "../../modules/tic-tac-toe/tic-tac-toe.system";
 
 export default class WebSocketServer {
   private server!: Server;
@@ -14,18 +14,13 @@ export default class WebSocketServer {
       },
     });
 
-    Object.values(ValidSystems).forEach((value) => {
-      const nsp = this.server.of(
-        value,
-        SystemConnectionFactory.generateConnection(value as ValidSystems)
-          .handler
-      );
+    this.createHandler(ValidSystems.Chat, new ChatSystem());
+    this.createHandler(ValidSystems.TicTacToe, new TicTacToeSystem());
+  }
 
-      nsp.on(
-        "connection",
-        SystemConnectionFactory.generateConnection(value as ValidSystems)
-          .handler
-      );
-    });
+  private createHandler(namespace: string, systemHandler: SystemInterface) {
+    const nsp = this.server.of(namespace);
+
+    nsp.on("connection", systemHandler.handler);
   }
 }
