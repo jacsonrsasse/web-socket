@@ -3,6 +3,7 @@ import { ValidSystems } from "../enums/valid-systems.enum";
 import { SystemInterface } from "../interfaces/system.interface";
 import { ChatSystem } from "../../modules/chat/chat.system";
 import TicTacToeSystem from "../../modules/tic-tac-toe/tic-tac-toe.system";
+import { Container } from "typedi";
 
 export default class WebSocketServer {
   private server!: Server;
@@ -14,8 +15,8 @@ export default class WebSocketServer {
       },
     });
 
-    this.createHandler(ValidSystems.Chat, new ChatSystem());
-    this.createHandler(ValidSystems.TicTacToe, new TicTacToeSystem());
+    this.createHandler(ValidSystems.Chat, Container.get(ChatSystem));
+    this.createHandler(ValidSystems.TicTacToe, Container.get(TicTacToeSystem));
   }
 
   private createHandler(namespace: string, systemHandler: SystemInterface) {
