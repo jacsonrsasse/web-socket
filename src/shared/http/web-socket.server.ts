@@ -1,4 +1,4 @@
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { ValidSystems } from "../enums/valid-systems.enum";
 import { SystemInterface } from "../interfaces/system.interface";
 import { ChatSystem } from "../../modules/chat/chat.system";
@@ -21,6 +21,6 @@ export default class WebSocketServer {
   private createHandler(namespace: string, systemHandler: SystemInterface) {
     const nsp = this.server.of(namespace);
 
-    nsp.on("connection", systemHandler.handler);
+    nsp.on("connection", (socket: Socket) => systemHandler.handler(socket));
   }
 }

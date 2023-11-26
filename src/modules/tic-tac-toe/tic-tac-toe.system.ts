@@ -31,6 +31,7 @@ export default class TicTacToeSystem implements SystemInterface {
         }
       );
 
+      socket.emit(TicTacToeClientSocketEvents.DEFINED_AS_SERVER);
       this.serverSocket = socket;
     });
 
@@ -38,14 +39,25 @@ export default class TicTacToeSystem implements SystemInterface {
 
     socket.on(TicTacToeServerSocketEvents.CREATE_USER_ROOM, ({ body }) => {
       try {
+        if (!this.serverSocket)
+          return socket.emit(TicTacToeClientSocketEvents.SERVER_OFFLINE);
+
         socket.join(body);
         this.rooms.push(body);
+
         socket.emit(TicTacToeClientSocketEvents.CONNECTED_IN_ROOM, body);
-      } catch (error) {}
+      } catch (error) {
+        socket.disconnect();
+        this.serverSocket.emit(TicTacToeClientSocketEvents.CREATE_ROOM_ERROR);
+      }
     });
 
     socket.on(TicTacToeServerSocketEvents.RELATE_USER_ID, ({ body }) => {
       try {
+        this.serverSocket.emit(
+          TicTacToeClientSocketEvents.RELATE_USER_ID,
+          body
+        );
       } catch (error) {}
     });
   }
