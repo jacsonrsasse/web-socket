@@ -15,8 +15,14 @@ export default class WebSocketServer {
     });
 
     Object.values(ValidSystems).forEach((value) => {
-      this.server.of(
+      const nsp = this.server.of(
         value,
+        SystemConnectionFactory.generateConnection(value as ValidSystems)
+          .handler
+      );
+
+      nsp.on(
+        "connection",
         SystemConnectionFactory.generateConnection(value as ValidSystems)
           .handler
       );
