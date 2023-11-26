@@ -24,4 +24,8 @@ export default class WebSocketServer {
 
     nsp.on("connection", (socket: Socket) => systemHandler.handler(socket));
   }
+
+  close() {
+    this.server.close();
+  }
 }
