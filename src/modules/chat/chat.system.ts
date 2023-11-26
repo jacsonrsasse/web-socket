@@ -9,6 +9,8 @@ export class ChatSystem implements SystemInterface {
     return this.socket.id;
   }
 
+  handler(socket: Socket) {}
+
   add(socket: Socket) {
     this.socket = socket;
 

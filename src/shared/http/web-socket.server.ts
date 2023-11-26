@@ -14,42 +14,12 @@ export default class WebSocketServer {
       },
     });
 
-    this.server.on("connection", (socket: Socket) => {
-      socket.on("select_system", (data: { system: string }) => {
-        this.handleSocketSystemSelection(socket, data.system);
-      });
+    Object.values(ValidSystems).forEach((value) => {
+      this.server.of(
+        value,
+        SystemConnectionFactory.generateConnection(value as ValidSystems)
+          .handler
+      );
     });
-  }
-
-  private handleSocketSystemSelection(socket: Socket, system: string) {
-    if (!system) {
-      return this.handleSocketDisconnect(socket, {
-        code: 1015,
-        message: "System value must be informed",
-      });
-    }
-
-    const s = system as ValidSystems;
-
-    if (!isSystemValid(s)) {
-      return this.handleSocketDisconnect(socket, {
-        code: 1008,
-        message: "Invalid system informed",
-      });
-    }
-
-    const systemConnection = SystemConnectionFactory.generateConnection(s);
-    systemConnection.add(socket);
-    systemConnection.joinRoom(s);
-
-    socket.emit("connected", { success: true });
-  }
-
-  private handleSocketDisconnect(
-    socket: Socket,
-    error?: { code: number; message: string }
-  ) {
-    socket.emit("error", error);
-    socket.disconnect(true);
   }
 }
