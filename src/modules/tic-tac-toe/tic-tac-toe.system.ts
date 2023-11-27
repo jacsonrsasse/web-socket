@@ -1,27 +1,36 @@
+import { Service, Inject } from "typedi";
 import { Socket } from "socket.io";
-import { DefaultEventsMap } from "socket.io/dist/typed-events";
-import { SystemInterface } from "../../shared/interfaces/system.interface";
-import { ValidSystems } from "../../shared/enums/valid-systems.enum";
 
+import { SystemInterface } from "@shared/interfaces/system.interface";
+
+import { TicTacToeRooms } from "./enums/tic-tac-toe-rooms.enum";
+import { TicTacToeServerSocketEvents } from "./enums/tic-tac-toe-server-socket-events.enum";
+
+import { DefineAsServerUseCase } from "./use-cases/define-as-server-use-case/define-as-server.usecase";
+import { CreateUserRoomUseCase } from "./use-cases/create-user-room-use-case/create-user-room.usecase";
+import { RelateUserIdUseCase } from "./use-cases/relate-user-id-use-case/relate-user-id.usecase";
+
+@Service()
 export default class TicTacToeSystem implements SystemInterface {
-  private socket!: Socket;
-  private currentRoom = "";
-  private isServerConnection = false;
+  constructor(
+    @Inject() private readonly defineAsServerUseCase: DefineAsServerUseCase,
+    @Inject() private readonly createUserRoomUseCase: CreateUserRoomUseCase,
+    @Inject() private readonly relateUserIdUseCase: RelateUserIdUseCase
+  ) {}
 
-  handler(socket: Socket) {}
+  handler(socket: Socket) {
+    socket.on(TicTacToeServerSocketEvents.DEFINE_AS_SERVER, () =>
+      this.defineAsServerUseCase.execute(socket)
+    );
 
-  add(socket: Socket) {
-    socket.on("define_as_server", () => {
-      this.isServerConnection = true;
-    });
+    socket.join(TicTacToeRooms.LOBBY_ROOM);
 
-    this.socket = socket;
-  }
+    socket.on(TicTacToeServerSocketEvents.CREATE_USER_ROOM, ({ body }) =>
+      this.createUserRoomUseCase.execute(socket, body)
+    );
 
-  joinRoom(room: string) {
-    if (!this.socket || room !== ValidSystems.TicTacToe) return;
-
-    this.currentRoom = room;
-    this.socket.join(room);
+    socket.on(TicTacToeServerSocketEvents.RELATE_USER_ID, ({ body }) =>
+      this.relateUserIdUseCase.execute(socket, body)
+    );
   }
 }

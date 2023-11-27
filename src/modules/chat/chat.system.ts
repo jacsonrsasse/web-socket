@@ -1,6 +1,8 @@
 import { SystemInterface } from "../../shared/interfaces/system.interface";
 import { Socket } from "socket.io";
+import { Service } from "typedi";
 
+@Service()
 export class ChatSystem implements SystemInterface {
   private socket!: Socket;
   private currentRoom = "";
