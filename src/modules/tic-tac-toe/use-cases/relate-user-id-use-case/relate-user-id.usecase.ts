@@ -11,6 +11,7 @@ export class RelateUserIdUseCase {
   ) {}
 
   execute(socket: Socket, body: string) {
+    console.log("Aqui");
     try {
       socket.nsp
         .in(this.ticTacToeRepository.findServerSocketId())

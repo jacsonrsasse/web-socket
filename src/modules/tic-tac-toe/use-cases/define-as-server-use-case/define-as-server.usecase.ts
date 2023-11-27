@@ -23,6 +23,7 @@ export class DefineAsServerUseCase {
     socket.leave(TicTacToeRooms.LOBBY_ROOM);
 
     socket.removeAllListeners(TicTacToeServerSocketEvents.CREATE_USER_ROOM);
+    socket.removeAllListeners(TicTacToeServerSocketEvents.RELATE_USER_ID);
 
     socket.join(TicTacToeRooms.SERVER_ROOM);
 
