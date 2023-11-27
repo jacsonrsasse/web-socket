@@ -7,10 +7,12 @@
     "module": "commonjs",
     "baseUrl": "./",
     "paths": {
-      "@modules/*": ["./src/modules/*"],
-      "@tests/*": ["./test/*"]
+      "@modules/*": ["src/modules/*"],
+      "@shared/*": ["src/shared/*"],
+      "@storage/*": ["src/storage/*"],
+      "@tests/*": ["test/*"]
     },
-    "rootDirs": ["src", "test"],
+    "rootDir": "src",
     "resolveJsonModule": true,
     "allowJs": false,
     "outDir": "./dist",

@@ -1,16 +1,20 @@
-import { Socket } from "socket.io";
-import { TicTacToeServerSocketEvents } from "../../enums/tic-tac-toe-server-socket-events.enum";
-import { TicTacToeClientSocketEvents } from "../../enums/tic-tac-toe-client-socket-events.enum";
-import { TicTacToeRooms } from "../../enums/tic-tac-toe-rooms.enum";
-import { TicTacToeStorage } from "../../storage/tic-tac-toe.storage";
 import { Service, Inject } from "typedi";
+import { Socket } from "socket.io";
+
+import { TicTacToeServerSocketEvents } from "@modules/tic-tac-toe/enums/tic-tac-toe-server-socket-events.enum";
+import { TicTacToeClientSocketEvents } from "@modules/tic-tac-toe/enums/tic-tac-toe-client-socket-events.enum";
+import { TicTacToeLocalStorageRepository } from "@modules/tic-tac-toe/repositories/tic-tac-toe-local-storage.repository";
+import { TicTacToeRooms } from "@modules/tic-tac-toe/enums/tic-tac-toe-rooms.enum";
 
 @Service()
 export class DefineAsServerUseCase {
-  constructor(@Inject() private readonly ticTacToeStorage: TicTacToeStorage) {}
+  constructor(
+    @Inject()
+    private readonly ticTacToeRepository: TicTacToeLocalStorageRepository
+  ) {}
 
   execute(socket: Socket) {
-    if (this.ticTacToeStorage.serverSocket) {
+    if (this.ticTacToeRepository.hasServerSocket()) {
       console.log("Ja tem um conectado");
       // todo: implement change server connection if a new one income
       return;
@@ -28,6 +32,6 @@ export class DefineAsServerUseCase {
     });
 
     socket.emit(TicTacToeClientSocketEvents.DEFINED_AS_SERVER);
-    this.ticTacToeStorage.serverSocket = socket;
+    this.ticTacToeRepository.saveServerSocket(socket.id);
   }
 }

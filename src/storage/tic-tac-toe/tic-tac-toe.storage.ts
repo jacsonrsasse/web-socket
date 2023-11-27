@@ -3,15 +3,15 @@ import { Service } from "typedi";
 
 @Service()
 export class TicTacToeStorage {
-  private _serverSocket!: Socket;
+  private _serverSocketId!: string;
   private _rooms!: Array<string>;
 
-  set serverSocket(socket: Socket) {
-    this._serverSocket = socket;
+  set serverSocketId(socketId: string) {
+    this._serverSocketId = socketId;
   }
 
-  get serverSocket() {
-    return this._serverSocket;
+  get serverSocketId() {
+    return this._serverSocketId;
   }
 
   addRoom(roomName: string) {
@@ -20,5 +20,9 @@ export class TicTacToeStorage {
 
   removeRoom(roomName: string) {
     this._rooms = this._rooms.splice(this._rooms.indexOf(roomName));
+  }
+
+  get rooms() {
+    return this._rooms;
   }
 }

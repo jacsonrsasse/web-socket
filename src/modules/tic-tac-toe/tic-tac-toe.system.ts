@@ -1,6 +1,8 @@
 import { Service, Inject } from "typedi";
 import { Socket } from "socket.io";
-import { SystemInterface } from "../../shared/interfaces/system.interface";
+
+import { SystemInterface } from "@shared/interfaces/system.interface";
+
 import { TicTacToeRooms } from "./enums/tic-tac-toe-rooms.enum";
 import { TicTacToeServerSocketEvents } from "./enums/tic-tac-toe-server-socket-events.enum";
 
@@ -28,7 +30,7 @@ export default class TicTacToeSystem implements SystemInterface {
     );
 
     socket.on(TicTacToeServerSocketEvents.RELATE_USER_ID, ({ body }) =>
-      this.relateUserIdUseCase.execute(body)
+      this.relateUserIdUseCase.execute(socket, body)
     );
   }
 }
