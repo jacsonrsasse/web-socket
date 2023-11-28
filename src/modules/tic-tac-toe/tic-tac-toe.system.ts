@@ -9,6 +9,7 @@ import { TicTacToeServerSocketEvents } from "./enums/tic-tac-toe-server-socket-e
 import { DefineAsServerUseCase } from "./use-cases/define-as-server-use-case/define-as-server.usecase";
 import { CreateUserRoomUseCase } from "./use-cases/create-user-room-use-case/create-user-room.usecase";
 import { RelateUserIdUseCase } from "./use-cases/relate-user-id-use-case/relate-user-id.usecase";
+import { TicTacToeClientSocketEvents } from "./enums/tic-tac-toe-client-socket-events.enum";
 
 @Service()
 export default class TicTacToeSystem implements SystemInterface {
@@ -19,18 +20,26 @@ export default class TicTacToeSystem implements SystemInterface {
   ) {}
 
   handler(socket: Socket) {
-    socket.on(TicTacToeServerSocketEvents.DEFINE_AS_SERVER, () =>
-      this.defineAsServerUseCase.execute(socket)
-    );
+    try {
+      console.debug(`New connection: ${socket.id}`);
 
-    socket.join(TicTacToeRooms.LOBBY_ROOM);
+      socket.on(TicTacToeServerSocketEvents.DEFINE_AS_SERVER, () =>
+        this.defineAsServerUseCase.execute(socket)
+      );
 
-    socket.on(TicTacToeServerSocketEvents.CREATE_USER_ROOM, ({ body }) =>
-      this.createUserRoomUseCase.execute(socket, body)
-    );
+      socket.join(TicTacToeRooms.LOBBY_ROOM);
 
-    socket.on(TicTacToeServerSocketEvents.RELATE_USER_ID, ({ body }) =>
-      this.relateUserIdUseCase.execute(socket, body)
-    );
+      socket.on(TicTacToeServerSocketEvents.CREATE_USER_ROOM, ({ body }) =>
+        this.createUserRoomUseCase.execute(socket, body)
+      );
+
+      socket.on(TicTacToeServerSocketEvents.RELATE_USER_ID, ({ body }) =>
+        this.relateUserIdUseCase.execute(socket, body)
+      );
+
+      socket.emit(TicTacToeClientSocketEvents.SUCCESS_TO_CONNECT);
+    } catch (error) {
+      socket.emit(TicTacToeClientSocketEvents.ERROR_TO_CONNECT);
+    }
   }
 }

@@ -19,6 +19,7 @@ export class DefineAsServerUseCase {
       // todo: implement change server connection if a new one income
       return;
     }
+    console.log(`Connection ${socket.id} becoming a server`);
 
     socket.leave(TicTacToeRooms.LOBBY_ROOM);
 
