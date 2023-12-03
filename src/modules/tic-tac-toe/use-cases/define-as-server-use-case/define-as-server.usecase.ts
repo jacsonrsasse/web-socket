@@ -15,10 +15,10 @@ export class DefineAsServerUseCase {
 
   execute(socket: Socket) {
     if (this.ticTacToeRepository.hasServerSocket()) {
-      console.log("Ja tem um conectado");
-      // todo: implement change server connection if a new one income
-      return;
+      socket.nsp.in(TicTacToeRooms.SERVER_ROOM).disconnectSockets();
     }
+
+    console.log(`Connection ${socket.id} becoming a server`);
 
     socket.leave(TicTacToeRooms.LOBBY_ROOM);
 
