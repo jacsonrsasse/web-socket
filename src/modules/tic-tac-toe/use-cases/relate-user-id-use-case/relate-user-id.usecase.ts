@@ -16,6 +16,10 @@ export class RelateUserIdUseCase {
       socket.nsp
         .in(this.ticTacToeRepository.findServerSocketId())
         .emit(TicTacToeClientSocketEvents.RELATE_USER_ID, body);
-    } catch (error) {}
+    } catch (error) {
+      socket.nsp
+        .in(this.ticTacToeRepository.findServerSocketId())
+        .emit(TicTacToeClientSocketEvents.ERROR_TO_RELATE_USER_ID, body);
+    }
   }
 }
