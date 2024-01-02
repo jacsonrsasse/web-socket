@@ -1,6 +1,8 @@
 import { SystemInterface } from "../../shared/interfaces/system.interface";
 import { Socket } from "socket.io";
 import { Service } from "typedi";
+import { ChatServerSocketEvents } from "./enums/chat-server-socket-events.enum";
+import { ChatClientSocketEvents } from "./enums/chat-client-socket-events.enum";
 
 @Service()
 export class ChatSystem implements SystemInterface {
@@ -11,7 +13,13 @@ export class ChatSystem implements SystemInterface {
     return this.socket.id;
   }
 
-  handler(socket: Socket) {}
+  handler(socket: Socket) {
+    socket.on(ChatServerSocketEvents.SEND_MESSAGE, (data: any) => {
+      socket.emit(ChatClientSocketEvents.RECEIVE_MESSAGE, data);
+    });
+
+    socket.on(ChatServerSocketEvents.JOIN_ROOM, () => {});
+  }
 
   add(socket: Socket) {
     this.socket = socket;
